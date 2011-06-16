@@ -1,0 +1,197 @@
+================
+ソフトウェアのインストールと実行について
+=================
+
+このテキストではサンプルプログラムtemper_1w.plの使い方について説明してあります。
+
+■ Unix系のOSを利用する場合
+
+Unix系のOSの場合はPerlが基本システムに含まれていたり, パッケージが用意
+されていますのでそちらからインストールしてください。Devie::SerialPort
+モジュールもパッケージからインストールできる場合が多いでしょう。
+Debianの場合はlibdevice-serialport-perl, CentOSなどでは
+perl-Device-SerialPort, FreeBSDの場合はp5-Device-SerialPortというよう
+な名前で用意されています。
+
+　OSでパッケージが用意されていない場合は, Perlをインストールしてから,
+以下のWindows+Cygwinの場合と同様にCPANからモジュールDevice::SerialPort
+をインストールします。
+
+
+■　Windows+Cygwinを利用する方法
+□　Cygwinについて
+
+CygwinはWindows上でUnix/Linux上でよく利用されているツールを使うための
+環境で, 下記URLから入手できます。
+
+  http://www.cygwin.com/
+
+　Cygwinの一般的なインストール方法についてはインターネット上の情報など
+を参考にしてください。 ここではサンプルプログラムを動かすのに必要な要点
+を書くことにします。
+
+
+□必要なパッケージの選択
+
+　Cygwinのインストールでは最小限の基本的なツール以外はユーザが必要に応
+じて選んでいきます。 今回はいくつか追加で選ぶ必要のあるパッケージがあり
+ます。 パッケージの選択画面(図1)で選んでください。デフォルトの状態ではカ
+テゴリ単位の階層表示になっています。
+
+・develカテゴリ下
+    パッケージ名
+     gcc4
+     gettext
+     make
+     readline
+・perlカテゴリ下
+     perl
+
+　それぞれのパッケージの"New"カラムに表示されている"Skip"という文字を
+クリックするとインストールするパッケージのバージョン番号が表示されます。 
+筆者の使用したバージョンは上記のものです。 他のツール類(エディタ, ssh,
+Xなど)については好みのものを入れておきましょう。 
+
+
+□ Perlモジュールの取得, CPANの利用
+
+CPANはインターネット上のPerlライブラリ, モジュールのアーカイブサイトで
+す.
+    http://www.cpan.org  
+
+CPANに登録されているモジュールはcpanコマンドを使ってネットワーク経由で
+インストールできます(外部からftpでファイルを取得できる環境が必要)。
+
+
+□ cpanの設定
+
+　Cygwinを起動してCygwinのコンソールウィンドウを出します。 こちらのコマ
+ンドラインで"cpan"と入力してenterキーを押します。 初回起動時はcpanの設
+定が始まります。 まず, 何行かのメッセージが出てきて, 自動的に設定を行う
+か聞いてきます。 正しくネットワークが設定されていれば自動設定で問題ない
+でしょう。
+　yesと入力してenterキーを押せば自動的に設定が行われ, cpanコマンドのコ
+マンドライン入力の状態になります(CPAN shell)。 
+
+  $ cpan
+     :
+  Would you like me to configure as much as possible automatically? [yes] 
+  yes  
+     :
+  cpan[1]> 
+
+　最初から設定をやり直したい場合は cpan コマンドのコマンドラインから o
+conf init と入力してください。 初回起動時と同じメッセージが出て最初から
+設定をやり直すことができます。
+
+
+  cpan[1]> o conf init
+
+□ Device::SerialPortモジュールのインストール
+
+　CPAN shellの設定が完了したらモジュールのインストールは簡単です。以下
+のようにCPAN shellで入力してenterキーを押せば依存関係上必要なファイル
+を含めて自動的にファイルをダウンロード, インストールを行ってくれます。
+
+
+  cpan[1]> install Device::SerialPort 
+
+なおcpanのコマンドにはインストールしたモジュールの削除のコマンドがない
+ので, インストールされているモジュールの名前を調べたり削除を行うスクリ
+プトを作り, ダウンロードサービスに含めました(moduleman.pl)。
+各OSのパッケージシステムでこれらの機能が利用できる場合はそちらを利用し
+てください。
+
+
+□ モジュールのインストールに失敗する場合は
+
+　PC等の環境によってはcpanコマンドのシリアルポートの自動検出に失敗して
+Device::SerialPortのインストールができない場合があるようです。　この場
+合cpanコマンドラインで以下のコマンドを試してみてください。
+
+  cpan[1]> force install Device::SerialPort 
+
+■温度測定プログラム
+
+□　デバイスの設定
+
+　サンプルプログラムは各実行環境で使用するシリアルポートの名前を定数
+DEVに設定する必要があります。12行目の以下の部分に設定します。
+
+use constant DEV => "/dev/XXXXX";
+
+　ホストのUSBポートと作成した基板上のUSBシリアル変換器をケーブルで接続
+して, どのような名前で認識されるか確認してください。 以下にいくつかの確
+認済みの例を示します。 Unix系のOSの場合, 他にUSBシリアル変換器を接続し
+ていない場合デバイスの番号は0番で認識される場合が多いようです。 このた
+めWindows以外はデバイス番号が0番で認識された場合を示します。
+
+・Windows(XP, 7)+Cygwin :
+　USBシリアル変換器のドライバとしてFTDI社のサイトで配布されているVCPド
+ライバをインストールする必要があります。 USBポートと接続する前にインス
+トールしておきましょう。
+
+http://www.ftdichip.com
+
+デバイスマネージャーの「ポート」で"USB serial converter"で認識されてい
+る機器を探します。 
+
+COM3に割り当てられている場合
+ use constant DEV => "/dev/com3";
+(use constant DEV => "/dev/ttyS2"; も同様に使える)
+
+・Linux:
+ use constant DEV => "/dev/ttyUSB0";
+
+・FreeBSD:
+ use constant DEV => "/dev/cuaU0";
+(use constant DEV => "/dev/ttyU0"; も使えるが動作は全く同じではなく,
+ cuaU0の方を推奨)
+
+・NetBSD:
+ use constatn DEV => "/dev/ttyU0";
+
+□ 温度測定プログラムの使い方
+
+　上記の設定に加えてPerlとモジュールが正しくインストールされていれば各
+環境のコマンドラインから実行できます。 シリアルポートへのアクセス権限が
+必要なのでUnix系のOSではrootアカウントで動かす必要があるかもしれません。
+
+  perl thermo_1w.pl
+
+で温度を測定し, 結果を表示します。 また以下のオプ
+ションが利用できます。
+
+   -r 各センサのROMIDを出力
+   -p parasite powerd(寄生電源)モード
+   -s 各センサのスクラッチパッドの内容を出力
+   -b ROM Search時の検索アクセラレータ出力をROMID
+      データと不一致データに分けて2進表示
+
+---  実行例 ----
+# perl test_1w.pl -r
+serial_init done
+reset 2480B done
+configure 2480B
+Devices num: 5
+Device 0 ROMID: 28-98xxxxxxxxxx-b9
+Device 1 ROMID: 28-adxxxxxxxxxx-b5
+Device 2 ROMID: 28-83xxxxxxxxxx-f5
+Device 3 ROMID: 28-73xxxxxxxxxx-66
+Device 4 ROMID: 28-ebxxxxxxxxxx-25
+[Sensor: 0]  26.1 (C)
+[Sensor: 1]  26.6 (C)
+[Sensor: 2]  26.3 (C)
+[Sensor: 3]  26.7 (C)
+[Sensor: 4]  26.6 (C)
+----------------
+　このプログラムは1回温度の測定を行って終了します. 温度測定のグラフを
+作成する場合は一定間隔で温度を測定してファイルへ出力して別のプログラム
+で処理を行うようにしています.
+
+
+■ 参考文献 ■ (追加分)
+(1)MAXIM 1-Wire(R)ソフトウェア開発者用ツール
+http://japan.maxim-ic.com/products/1-wire/software/
+(2)Red Hat,Inc Cygwin User's Guide
+http://cygwin.com/cygwin-ug-net/cygwin-ug-net.html
